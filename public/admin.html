@@ -253,8 +253,31 @@ textarea.fc { resize:vertical; min-height:65px; }
     <div class="page-title">🔄 Reassign Leads</div>
     <div class="page-sub">Reassign leads between BDRs in bulk or individually</div>
   </div>
+  <!-- Assign Unassigned Leads -->
+  <div class="card" style="border:2px solid #fbbf24;background:#fffbeb;">
+    <div class="card-title" style="color:#92400e;">⚡ Assign Unassigned Leads <span id="unassignedCount" style="background:#f59e0b;color:white;border-radius:20px;padding:2px 10px;font-size:11px;margin-left:6px;">0</span></div>
+    <div style="font-size:12px;color:#78350f;margin-bottom:12px;">These leads have no BDR assigned yet. Select a BDR and assign them in bulk or split evenly across all BDRs.</div>
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div class="fg" style="margin:0;flex:1;">
+        <label class="flbl">Assign To BDR</label>
+        <select class="fc" id="unassignedToBdr"></select>
+      </div>
+      <div class="fg" style="margin:0;">
+        <label class="flbl">Stage Filter (optional)</label>
+        <select class="fc" id="unassignedStage">
+          <option value="">All Stages</option>
+          <option>Identified</option><option>Contacted</option><option>Discovery Done</option>
+          <option>Demo Booked</option><option>Demo Done</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="background:#f59e0b;border-color:#f59e0b;" onclick="assignUnassigned()">⚡ Assign All Unassigned</button>
+      <button class="btn btn-secondary" onclick="splitAssign()" title="Distribute unassigned leads evenly across all BDRs">⚖️ Split Evenly</button>
+    </div>
+  </div>
+
+  <!-- Bulk Reassign between BDRs -->
   <div class="card">
-    <div class="card-title">Bulk Reassign</div>
+    <div class="card-title">🔄 Bulk Reassign Between BDRs</div>
     <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
       <div class="fg" style="margin:0;flex:1;">
         <label class="flbl">From BDR</label>
@@ -380,7 +403,7 @@ function populateOwnerDropdowns() {
   const bdrs = users.filter(u => u.role==='bdr');
   const ownerF = document.getElementById('ownerF');
   ownerF.innerHTML = '<option value="">All Owners</option>' + bdrs.map(u=>`<option>${u.name}</option>`).join('');
-  ['lOwner','fromBdr','toBdr'].forEach(id => {
+  ['lOwner','fromBdr','toBdr','unassignedToBdr'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = bdrs.map(u=>`<option>${u.name}</option>`).join('');
   });
@@ -529,14 +552,19 @@ function renderKPI() {
 // ── REASSIGN ──────────────────────────────────────────────────────────────────
 function renderAssign() {
   const bdrs = users.filter(u=>u.role==='bdr').map(u=>u.name);
+  // Update unassigned count badge
+  const unassigned = leads.filter(l => !l.owner || l.owner.trim() === '');
+  document.getElementById('unassignedCount').textContent = unassigned.length;
+
   document.getElementById('assignBody').innerHTML = leads.map(l=>`
-    <tr>
-      <td><strong>${l.name}</strong></td>
+    <tr style="${(!l.owner||l.owner.trim()==='')?'background:#fffbeb;':''}">
+      <td><strong>${l.name}</strong>${(!l.owner||l.owner.trim()==='')?' <span style="font-size:10px;color:#f59e0b;font-weight:700;">UNASSIGNED</span>':''}</td>
       <td>${l.co}</td>
       <td><span class="badge ${stageCols[l.stage]||'b-gray'}">${l.stage}</span></td>
-      <td>${l.owner}</td>
+      <td>${l.owner || '<em style="color:#94a3b8;">None</em>'}</td>
       <td>
-        <select class="fc" style="width:110px;padding:4px 8px;" onchange="reassignOne(${l.id},this.value)">
+        <select class="fc" style="width:130px;padding:4px 8px;" onchange="reassignOne(${l.id},this.value)">
+          <option value="">— Assign —</option>
           ${bdrs.map(b=>`<option${b===l.owner?' selected':''}>${b}</option>`).join('')}
         </select>
       </td>
@@ -544,8 +572,42 @@ function renderAssign() {
 }
 
 async function reassignOne(id, newOwner) {
+  if (!newOwner) return;
   await fetch(`/api/leads/${id}`, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({owner:newOwner})});
   leads = await fetch('/api/leads').then(r=>r.json());
+  renderAssign();
+}
+
+async function assignUnassigned() {
+  const to    = document.getElementById('unassignedToBdr').value;
+  const stage = document.getElementById('unassignedStage').value;
+  if (!to) { alert('Please select a BDR to assign to'); return; }
+  const toAssign = leads.filter(l => (!l.owner || l.owner.trim() === '') && (!stage || l.stage === stage));
+  if (!toAssign.length) { alert('No unassigned leads found with those filters'); return; }
+  if (!confirm(`Assign ${toAssign.length} unassigned leads to ${to}?`)) return;
+  for (const l of toAssign) {
+    await fetch(`/api/leads/${l.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({owner:to})});
+  }
+  leads = await fetch('/api/leads').then(r=>r.json());
+  renderAssign();
+  alert(`✅ ${toAssign.length} leads assigned to ${to}`);
+}
+
+async function splitAssign() {
+  const stage = document.getElementById('unassignedStage').value;
+  const bdrs  = users.filter(u=>u.role==='bdr');
+  if (!bdrs.length) { alert('No BDRs found'); return; }
+  const toAssign = leads.filter(l => (!l.owner || l.owner.trim() === '') && (!stage || l.stage === stage));
+  if (!toAssign.length) { alert('No unassigned leads found'); return; }
+  if (!confirm(`Split ${toAssign.length} unassigned leads evenly across ${bdrs.length} BDRs?`)) return;
+  for (let i = 0; i < toAssign.length; i++) {
+    const bdr = bdrs[i % bdrs.length];
+    await fetch(`/api/leads/${toAssign[i].id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({owner:bdr.name})});
+  }
+  leads = await fetch('/api/leads').then(r=>r.json());
+  renderAssign();
+  const perBdr = bdrs.map(b=>b.name+': '+Math.ceil(toAssign.length/bdrs.length)).join(', ');
+  alert(`✅ ${toAssign.length} leads split across BDRs (~${Math.ceil(toAssign.length/bdrs.length)} each)`);
 }
 
 async function bulkReassign() {
