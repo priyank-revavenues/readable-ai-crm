@@ -1,0 +1,212 @@
+{
+  "users": [
+    {
+      "id": "admin",
+      "name": "Priyank",
+      "username": "priyank",
+      "password": "Admin@2026",
+      "role": "admin"
+    },
+    {
+      "id": "anupama",
+      "name": "Anupama",
+      "username": "anupama",
+      "password": "Bdr@2026",
+      "role": "bdr"
+    },
+    {
+      "id": "bdr1",
+      "name": "BDR 1",
+      "username": "bdr1",
+      "password": "Bdr@2026",
+      "role": "bdr"
+    },
+    {
+      "id": "bdr2",
+      "name": "BDR 2",
+      "username": "bdr2",
+      "password": "Bdr@2026",
+      "role": "bdr"
+    },
+    {
+      "id": "bdr3",
+      "name": "BDR 3",
+      "username": "bdr3",
+      "password": "Bdr@2026",
+      "role": "bdr"
+    }
+  ],
+  "leads": [
+    {
+      "id": 1,
+      "name": "Arjun Mehta",
+      "co": "ICICI Bank",
+      "desg": "Head of Digital Innovation",
+      "ind": "BFSI / Fintech",
+      "email": "arjun.m@icici.com",
+      "phone": "+91 98200 11111",
+      "li": "linkedin.com/in/arjunmehta",
+      "src": "LinkedIn Outreach",
+      "stage": "Contacted",
+      "lc": "2026-04-22",
+      "nc": "2026-05-02",
+      "owner": "Anupama",
+      "notes": "Concerned about ICICI's visibility in AI search vs HDFC and Axis."
+    },
+    {
+      "id": 2,
+      "name": "Priya Kapoor",
+      "co": "Meesho",
+      "desg": "Chief Marketing Officer",
+      "ind": "Retail / D2C",
+      "email": "priya.k@meesho.com",
+      "phone": "+91 98100 22222",
+      "li": "linkedin.com/in/priyakapoor",
+      "src": "Cold Email",
+      "stage": "Discovery Done",
+      "lc": "2026-04-25",
+      "nc": "2026-04-30",
+      "owner": "BDR 1",
+      "notes": "Organic traffic down 20% YoY. Ready for demo."
+    },
+    {
+      "id": 3,
+      "name": "Siddharth Rao",
+      "co": "Mphasis",
+      "desg": "AI Implementation Lead",
+      "ind": "IT / SaaS",
+      "email": "sid.rao@mphasis.com",
+      "phone": "+91 99000 33333",
+      "li": "linkedin.com/in/sidrao",
+      "src": "RevAvenues.ai Marketplace",
+      "stage": "Demo Booked",
+      "lc": "2026-04-20",
+      "nc": "2026-05-05",
+      "owner": "Anupama",
+      "notes": "Demo May 5. Wants live AI visibility audit vs TCS/Infosys."
+    },
+    {
+      "id": 4,
+      "name": "Neha Joshi",
+      "co": "Marico",
+      "desg": "Innovation Head",
+      "ind": "Retail / D2C",
+      "email": "neha.j@marico.com",
+      "phone": "+91 97300 44444",
+      "li": "linkedin.com/in/nehajoshi",
+      "src": "LinkedIn Outreach",
+      "stage": "Identified",
+      "lc": "",
+      "nc": "2026-05-01",
+      "owner": "BDR 2",
+      "notes": "Posted on LinkedIn about AI changing consumer discovery."
+    },
+    {
+      "id": 5,
+      "name": "Vikram Singh",
+      "co": "Max Life Insurance",
+      "desg": "Chief Digital Officer",
+      "ind": "BFSI / Fintech",
+      "email": "vikram.s@maxlife.com",
+      "phone": "+91 96100 55555",
+      "li": "linkedin.com/in/vikrams",
+      "src": "Referral",
+      "stage": "Proposal Sent",
+      "lc": "2026-04-28",
+      "nc": "2026-05-03",
+      "owner": "Anupama",
+      "notes": "Proposal sent. Key concern: proving AI citations lead to leads."
+    },
+    {
+      "id": 6,
+      "name": "Deepika Anand",
+      "co": "Godrej Properties",
+      "desg": "Head of Digital Marketing",
+      "ind": "Other",
+      "email": "deepika.a@godrej.com",
+      "phone": "+91 98500 66666",
+      "li": "linkedin.com/in/deepikaanand",
+      "src": "LinkedIn Outreach",
+      "stage": "Contacted",
+      "lc": "2026-04-18",
+      "nc": "2026-04-30",
+      "owner": "BDR 3",
+      "notes": "Responded to LinkedIn DM warmly."
+    },
+    {
+      "id": 7,
+      "name": "Rohit Nair",
+      "co": "Lenskart",
+      "desg": "Founder & CEO",
+      "ind": "Retail / D2C",
+      "email": "rohit@lenskart.com",
+      "phone": "+91 95500 77777",
+      "li": "linkedin.com/in/rohitnair",
+      "src": "Event / Conference",
+      "stage": "Demo Done",
+      "lc": "2026-04-26",
+      "nc": "2026-05-02",
+      "owner": "Anupama",
+      "notes": "Demo went well. Wants proposal for full AI visibility program."
+    },
+    {
+      "id": 8,
+      "name": "Aisha Khan",
+      "co": "Pristyn Care",
+      "desg": "Head of Marketing",
+      "ind": "Healthcare",
+      "email": "aisha.k@pristyncare.com",
+      "phone": "+91 94400 88888",
+      "li": "linkedin.com/in/aishakhan",
+      "src": "Cold Email",
+      "stage": "Identified",
+      "lc": "",
+      "nc": "2026-05-03",
+      "owner": "BDR 1",
+      "notes": "Big opportunity to be AI recommendation for elective surgery queries."
+    },
+    {
+      "id": 9,
+      "name": "Kartik Bhatia",
+      "co": "Angel One",
+      "desg": "Head of Innovation",
+      "ind": "BFSI / Fintech",
+      "email": "kartik.b@angelone.in",
+      "phone": "+91 93300 99999",
+      "li": "linkedin.com/in/kartikbhatia",
+      "src": "LinkedIn Outreach",
+      "stage": "Contacted",
+      "lc": "2026-04-24",
+      "nc": "2026-05-04",
+      "owner": "BDR 2",
+      "notes": "Zerodha and Groww dominating AI search. Strong pain point."
+    },
+    {
+      "id": 10,
+      "name": "Sneha Tiwari",
+      "co": "Tata Communications",
+      "desg": "AI Implementation Head",
+      "ind": "IT / SaaS",
+      "email": "sneha.t@tatacommunications.com",
+      "phone": "+91 92200 10000",
+      "li": "linkedin.com/in/snehatiwari",
+      "src": "RevAvenues.ai Marketplace",
+      "stage": "Negotiation",
+      "lc": "2026-04-29",
+      "nc": "2026-05-01",
+      "owner": "Anupama",
+      "notes": "Negotiating enterprise scope. Loop in Priyank for final sign-off."
+    }
+  ],
+  "activity": [
+    {
+      "id": 1777631967001.9849,
+      "userId": "admin",
+      "userName": "Priyank",
+      "action": "Logged in",
+      "leadName": "",
+      "leadCo": "",
+      "timestamp": "2026-05-01T10:39:27.001Z"
+    }
+  ]
+}

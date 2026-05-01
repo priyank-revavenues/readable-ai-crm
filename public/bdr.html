@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Readable.ai CRM — My Leads</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f0f4f8; color:#1e293b; min-height:100vh; }
+.topbar { background:#0f1f3d; color:white; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.topbar-left { display:flex; align-items:center; gap:14px; }
+.topbar-badge { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#60a5fa; }
+.topbar-title { font-size:15px; font-weight:800; }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.user-chip { background:rgba(255,255,255,.1); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; }
+.btn-logout { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:white; padding:6px 13px; border-radius:7px; font-size:11.5px; cursor:pointer; font-weight:600; }
+.btn-logout:hover { background:rgba(255,255,255,.15); }
+
+.main { max-width:1100px; margin:0 auto; padding:24px; }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
+.stat { background:white; border-radius:11px; padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.stat-lbl { font-size:10.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.stat-val { font-size:26px; font-weight:800; color:#0f1f3d; margin:3px 0 1px; }
+.stat-note { font-size:11px; color:#94a3b8; }
+.stat-note.red { color:#dc2626; font-weight:600; }
+.stat-note.grn { color:#16a34a; }
+
+/* TOOLBAR */
+.toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.search-inp { flex:1; padding:9px 13px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12.5px; outline:none; }
+.search-inp:focus { border-color:#3b82f6; }
+.sel { padding:9px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12.5px; outline:none; background:white; }
+.btn { display:inline-flex; align-items:center; gap:5px; padding:8px 15px; border-radius:7px; font-size:12.5px; font-weight:700; cursor:pointer; border:none; transition:all .15s; }
+.btn-primary { background:#1d4ed8; color:white; }
+.btn-primary:hover { background:#1e40af; }
+.btn-secondary { background:#f1f5f9; color:#334155; }
+.btn-secondary:hover { background:#e2e8f0; }
+.btn-sm { padding:5px 10px; font-size:11.5px; }
+.btn-ghost { background:none; border:none; cursor:pointer; padding:4px 7px; border-radius:5px; font-size:13px; }
+.btn-ghost:hover { background:#f1f5f9; }
+
+/* TABLE */
+.card { background:white; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.07); overflow:hidden; }
+.tbl-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:12.5px; }
+th { text-align:left; padding:10px 13px; background:#f8fafc; color:#64748b; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
+td { padding:11px 13px; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#fafbfc; }
+.badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
+.b-gray { background:#f1f5f9; color:#475569; }
+.b-blue { background:#dbeafe; color:#1d4ed8; }
+.b-green { background:#dcfce7; color:#15803d; }
+.b-yellow { background:#fef3c7; color:#92400e; }
+.b-red { background:#fee2e2; color:#991b1b; }
+.b-purple { background:#ede9fe; color:#6d28d9; }
+.b-orange { background:#ffedd5; color:#9a3412; }
+.overdue { color:#dc2626; font-weight:700; }
+.due-soon { color:#d97706; font-weight:600; }
+
+/* MODAL */
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+.overlay.open { display:flex; }
+.modal { background:white; border-radius:14px; padding:22px; width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.modal-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.modal-ttl { font-size:15px; font-weight:800; color:#0f1f3d; }
+.modal-x { width:26px; height:26px; border-radius:50%; background:#f1f5f9; border:none; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; color:#64748b; }
+.fg { margin-bottom:12px; }
+.flbl { font-size:11.5px; font-weight:700; color:#475569; margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.4px; }
+.fc { width:100%; padding:8px 11px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#1e293b; outline:none; transition:border .15s; background:white; }
+.fc:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+textarea.fc { resize:vertical; min-height:70px; }
+.frow { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.empty { text-align:center; padding:40px; color:#94a3b8; }
+
+/* QUICK UPDATE PANEL */
+.quick-panel { background:#f8fafc; border-top:1px solid #e2e8f0; padding:13px 16px; display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+.quick-lbl { font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:4px; display:block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-badge">RevAvenues · BU1</div>
+      <div class="topbar-title">Readable.ai — My Leads</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">👤 <span id="userName">…</span></div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-lbl">My Leads</div><div class="stat-val" id="sTotal">0</div><div class="stat-note">Assigned to me</div></div>
+    <div class="stat"><div class="stat-lbl">Overdue</div><div class="stat-val" id="sOverdue">0</div><div class="stat-note red" id="sOverdueNote">Follow-ups due</div></div>
+    <div class="stat"><div class="stat-lbl">Demo Stage+</div><div class="stat-val" id="sAdv">0</div><div class="stat-note grn">In advanced stage</div></div>
+    <div class="stat"><div class="stat-lbl">Due Today</div><div class="stat-val" id="sToday">0</div><div class="stat-note">Call today</div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input class="search-inp" id="searchInp" placeholder="🔍 Search name or company…" oninput="renderTable()">
+    <select class="sel" id="stageF" onchange="renderTable()">
+      <option value="">All Stages</option>
+      <option>Identified</option><option>Contacted</option><option>Discovery Done</option>
+      <option>Demo Booked</option><option>Demo Done</option><option>Proposal Sent</option>
+      <option>Negotiation</option><option>Closed Won</option><option>Closed Lost</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddLead()">+ Add Lead</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Contact</th><th>Company</th><th>Designation</th><th>Stage</th>
+          <th>Last Call</th><th>Next Call</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="leadsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="overlay" id="updateModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-ttl" id="updateTitle">Update Lead</div>
+      <button class="modal-x" onclick="closeModal('updateModal')">✕</button>
+    </div>
+    <div style="background:#f0f7ff;border-radius:8px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:#0f1f3d;" id="uLeadName">—</div>
+      <div style="font-size:11.5px;color:#64748b;margin-top:2px;" id="uLeadCo">—</div>
+    </div>
+    <div class="fg">
+      <label class="flbl">Stage</label>
+      <select class="fc" id="uStage">
+        <option>Identified</option><option>Contacted</option><option>Discovery Done</option>
+        <option>Demo Booked</option><option>Demo Done</option><option>Proposal Sent</option>
+        <option>Negotiation</option><option>Closed Won</option><option>Closed Lost</option>
+      </select>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Last Call Date</label><input class="fc" id="uLC" type="date"></div>
+      <div class="fg"><label class="flbl">Next Call Date</label><input class="fc" id="uNC" type="date"></div>
+    </div>
+    <div class="fg"><label class="flbl">Call Notes / Update</label><textarea class="fc" id="uNotes" placeholder="What happened on the call? What are the next steps?"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('updateModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUpdate()">💾 Save Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-ttl">➕ Add New Lead</div>
+      <button class="modal-x" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Name *</label><input class="fc" id="aName" placeholder="Full name"></div>
+      <div class="fg"><label class="flbl">Company *</label><input class="fc" id="aCo" placeholder="Company name"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Designation</label><input class="fc" id="aDesg" placeholder="e.g. Head of Marketing"></div>
+      <div class="fg"><label class="flbl">Industry</label>
+        <select class="fc" id="aInd">
+          <option>BFSI / Fintech</option><option>IT / SaaS</option><option>Retail / D2C</option>
+          <option>Healthcare</option><option>Manufacturing</option><option>Professional Services</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">Email</label><input class="fc" id="aEmail" type="email"></div>
+      <div class="fg"><label class="flbl">Phone</label><input class="fc" id="aPhone" placeholder="+91 98XXX XXXXX"></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flbl">LinkedIn URL</label><input class="fc" id="aLI" placeholder="linkedin.com/in/..."></div>
+      <div class="fg"><label class="flbl">Source</label>
+        <select class="fc" id="aSrc">
+          <option>LinkedIn Outreach</option><option>Cold Email</option><option>Referral</option>
+          <option>WhatsApp</option><option>Manual Entry</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="flbl">Next Call Date</label><input class="fc" id="aNC" type="date"></div>
+    <div class="fg"><label class="flbl">Notes</label><textarea class="fc" id="aNotes" placeholder="Any context about this prospect…"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewLead()">Add Lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let leads  = [];
+let editId = null;
+
+const stageCols = {
+  'Identified':'b-gray','Contacted':'b-blue','Discovery Done':'b-purple',
+  'Demo Booked':'b-yellow','Demo Done':'b-orange','Proposal Sent':'b-yellow',
+  'Negotiation':'b-red','Closed Won':'b-green','Closed Lost':'b-gray'
+};
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function fd(d) {
+  if (!d) return '';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+}
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const me = await fetch('/api/me').then(r => r.json()).catch(() => null);
+  if (!me || !me.id) { window.location.href = '/'; return; }
+  if (me.role === 'admin') { window.location.href = '/admin.html'; return; }
+  document.getElementById('userName').textContent = me.name;
+  await loadLeads();
+  setInterval(loadLeads, 30000); // refresh every 30s
+}
+
+async function loadLeads() {
+  const res = await fetch('/api/leads').catch(() => null);
+  if (!res || !res.ok) return;
+  leads = await res.json();
+  updateStats();
+  renderTable();
+}
+
+function updateStats() {
+  const td = today();
+  document.getElementById('sTotal').textContent   = leads.length;
+  document.getElementById('sOverdue').textContent = leads.filter(l => l.nc && l.nc < td && !['Closed Won','Closed Lost'].includes(l.stage)).length;
+  document.getElementById('sAdv').textContent     = leads.filter(l => ['Demo Booked','Demo Done','Proposal Sent','Negotiation','Closed Won'].includes(l.stage)).length;
+  document.getElementById('sToday').textContent   = leads.filter(l => l.nc === td).length;
+}
+
+function renderTable() {
+  const q  = document.getElementById('searchInp').value.toLowerCase();
+  const sf = document.getElementById('stageF').value;
+  const td = today();
+  const data = leads.filter(l => {
+    const mq = !q || [l.name,l.co,l.desg].some(x => (x||'').toLowerCase().includes(q));
+    const ms = !sf || l.stage === sf;
+    return mq && ms;
+  });
+  document.getElementById('leadsBody').innerHTML = data.map(l => {
+    const ncClass = l.nc ? (l.nc < td ? 'overdue' : l.nc === td ? 'due-soon' : '') : '';
+    const ncHtml  = l.nc ? `<span class="${ncClass}">${fd(l.nc)}${l.nc < td ? ' ⚠️' : ''}</span>` : '<span style="color:#94a3b8">—</span>';
+    return `<tr>
+      <td><strong>${l.name}</strong><div style="font-size:10.5px;color:#64748b;">${l.email||''}</div></td>
+      <td style="font-weight:600;">${l.co}</td>
+      <td style="font-size:11.5px;">${l.desg||''}</td>
+      <td><span class="badge ${stageCols[l.stage]||'b-gray'}">${l.stage}</span></td>
+      <td style="font-size:11.5px;">${l.lc ? fd(l.lc) : '<span style="color:#94a3b8">Never</span>'}</td>
+      <td style="font-size:11.5px;">${ncHtml}</td>
+      <td>
+        <button class="btn btn-primary btn-sm" onclick="openUpdate(${l.id})">✏️ Update</button>
+        <button class="btn-ghost" title="Call" onclick="window.open('tel:${l.phone}')">📞</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">No leads found</td></tr>';
+}
+
+// ── UPDATE LEAD ───────────────────────────────────────────────────────────────
+function openUpdate(id) {
+  const l = leads.find(x => x.id == id);
+  if (!l) return;
+  editId = id;
+  document.getElementById('updateTitle').textContent = 'Update — ' + l.name;
+  document.getElementById('uLeadName').textContent   = l.name;
+  document.getElementById('uLeadCo').textContent     = l.co + (l.desg ? ' · ' + l.desg : '');
+  document.getElementById('uStage').value  = l.stage;
+  document.getElementById('uLC').value     = l.lc || '';
+  document.getElementById('uNC').value     = l.nc || '';
+  document.getElementById('uNotes').value  = l.notes || '';
+  openModal('updateModal');
+}
+
+async function saveUpdate() {
+  if (!editId) return;
+  const body = {
+    stage: document.getElementById('uStage').value,
+    lc:    document.getElementById('uLC').value,
+    nc:    document.getElementById('uNC').value,
+    notes: document.getElementById('uNotes').value,
+  };
+  const res = await fetch(`/api/leads/${editId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (res.ok) { closeModal('updateModal'); await loadLeads(); }
+  else { alert((await res.json()).error || 'Update failed'); }
+}
+
+// ── ADD LEAD ──────────────────────────────────────────────────────────────────
+function openAddLead() {
+  ['aName','aCo','aDesg','aEmail','aPhone','aLI','aNC','aNotes'].forEach(id => document.getElementById(id).value = '');
+  openModal('addModal');
+}
+async function saveNewLead() {
+  const name = document.getElementById('aName').value.trim();
+  const co   = document.getElementById('aCo').value.trim();
+  if (!name || !co) { alert('Name and Company are required'); return; }
+  const body = {
+    name, co,
+    desg:  document.getElementById('aDesg').value,
+    ind:   document.getElementById('aInd').value,
+    email: document.getElementById('aEmail').value,
+    phone: document.getElementById('aPhone').value,
+    li:    document.getElementById('aLI').value,
+    src:   document.getElementById('aSrc').value,
+    nc:    document.getElementById('aNC').value,
+    notes: document.getElementById('aNotes').value,
+    stage: 'Identified', lc: ''
+  };
+  const res = await fetch('/api/leads', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (res.ok) { closeModal('addModal'); await loadLeads(); }
+  else { alert((await res.json()).error || 'Failed to add lead'); }
+}
+
+// ── LOGOUT ────────────────────────────────────────────────────────────────────
+async function logout() {
+  await fetch('/api/logout', { method:'POST' });
+  window.location.href = '/';
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+init();
+</script>
+</body>
+</html>
