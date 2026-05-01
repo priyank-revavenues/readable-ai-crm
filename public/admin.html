@@ -147,6 +147,7 @@ textarea.fc { resize:vertical; min-height:65px; }
     <div class="nav-item" onclick="nav('kpi',this)"><span class="ic">📈</span> KPI Dashboard</div>
     <div class="nav-group">Team</div>
     <div class="nav-item" onclick="nav('assign',this)"><span class="ic">🔄</span> Reassign Leads</div>
+    <div class="nav-item" onclick="nav('team',this)"><span class="ic">👥</span> Manage Team</div>
   </nav>
   <div class="sidebar-foot">
     <div class="user-info">Admin: <strong id="adminName">Priyank</strong><br>revavenues.in</div>
@@ -283,7 +284,37 @@ textarea.fc { resize:vertical; min-height:65px; }
   </div>
 </div>
 
+<!-- ===== TEAM MANAGEMENT ===== -->
+<div id="s-team" class="section">
+  <div class="page-hdr">
+    <div class="page-title">👥 Manage Team</div>
+    <div class="page-sub">Rename BDRs, update usernames and reset passwords</div>
+  </div>
+  <div id="teamCards" class="card-grid"></div>
+</div>
+
 </div><!-- /main -->
+
+<!-- EDIT USER MODAL -->
+<div class="overlay" id="userModal">
+  <div class="modal" style="width:420px;">
+    <div class="modal-hdr">
+      <div class="modal-ttl">✏️ Edit Team Member</div>
+      <button class="modal-x" onclick="closeModal('userModal')">✕</button>
+    </div>
+    <div style="background:#f0f7ff;border-radius:8px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;color:#1d4ed8;">
+      Changing the name will automatically update all leads assigned to this BDR.
+    </div>
+    <input type="hidden" id="uUserId">
+    <div class="fg"><label class="flbl">Display Name</label><input class="fc" id="uUserName" placeholder="e.g. Sweta"></div>
+    <div class="fg"><label class="flbl">Username (login)</label><input class="fc" id="uUsername" placeholder="e.g. sweta"></div>
+    <div class="fg"><label class="flbl">New Password <span style="font-weight:400;color:#94a3b8;">(leave blank to keep current)</span></label><input class="fc" id="uPassword" type="password" placeholder="Leave blank to keep unchanged"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
 
 <!-- LEAD MODAL -->
 <div class="overlay" id="leadModal">
@@ -366,6 +397,7 @@ function nav(id, el) {
   if (id==='pipeline') renderKanban();
   if (id==='kpi')      renderKPI();
   if (id==='assign')   renderAssign();
+  if (id==='team')     renderTeam();
 }
 
 // ── BDR TRACKER ───────────────────────────────────────────────────────────────
@@ -574,6 +606,58 @@ async function deleteLead(id) {
   await fetch(`/api/leads/${id}`,{method:'DELETE'});
   leads = await fetch('/api/leads').then(r=>r.json());
   renderLeads();
+}
+
+// ── TEAM MANAGEMENT ───────────────────────────────────────────────────────────
+async function renderTeam() {
+  const bdrs = users.filter(u => u.role === 'bdr');
+  document.getElementById('teamCards').innerHTML = bdrs.map(u => {
+    const myLeads = leads.filter(l => l.owner === u.name);
+    return `
+    <div class="card" style="border-top:3px solid #1d4ed8;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#0f1f3d;">${u.name}</div>
+          <div style="font-size:11.5px;color:#64748b;margin-top:2px;">@${u.username}</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="openEditUser('${u.id}','${u.name}','${u.username}')">✏️ Edit</button>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;color:#64748b;">
+        <span>📋 <strong style="color:#0f1f3d;">${myLeads.length}</strong> leads</span>
+        <span>✅ <strong style="color:#0f1f3d;">${myLeads.filter(l=>l.stage==='Closed Won').length}</strong> won</span>
+        <span>⚠️ <strong style="color:#dc2626;">${myLeads.filter(l=>l.nc&&l.nc<today()&&!['Closed Won','Closed Lost'].includes(l.stage)).length}</strong> overdue</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEditUser(id, name, username) {
+  document.getElementById('uUserId').value   = id;
+  document.getElementById('uUserName').value = name;
+  document.getElementById('uUsername').value = username;
+  document.getElementById('uPassword').value = '';
+  openModal('userModal');
+}
+
+async function saveUser() {
+  const id       = document.getElementById('uUserId').value;
+  const name     = document.getElementById('uUserName').value.trim();
+  const username = document.getElementById('uUsername').value.trim();
+  const password = document.getElementById('uPassword').value;
+  if (!name || !username) { alert('Name and username are required'); return; }
+  const body = { name, username };
+  if (password) body.password = password;
+  const res = await fetch(`/api/users/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (res.ok) {
+    closeModal('userModal');
+    users    = await fetch('/api/users').then(r=>r.json());
+    leads    = await fetch('/api/leads').then(r=>r.json());
+    populateOwnerDropdowns();
+    renderTeam();
+    alert(`✅ Team member updated successfully!`);
+  } else {
+    alert((await res.json()).error || 'Update failed');
+  }
 }
 
 async function logout() {
