@@ -3,342 +3,686 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Readable.ai CRM — My Leads</title>
+<title>Readable.ai CRM — Daily Calling Dashboard</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#f0f4f8; color:#1e293b; min-height:100vh; }
-.topbar { background:#0f1f3d; color:white; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-.topbar-left { display:flex; align-items:center; gap:14px; }
+
+/* ── TOPBAR ── */
+.topbar { background:#0f1f3d; color:white; padding:11px 22px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:200; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+.topbar-left { display:flex; align-items:center; gap:12px; }
 .topbar-badge { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:#60a5fa; }
-.topbar-title { font-size:15px; font-weight:800; }
-.topbar-right { display:flex; align-items:center; gap:12px; }
-.user-chip { background:rgba(255,255,255,.1); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:600; }
-.btn-logout { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:white; padding:6px 13px; border-radius:7px; font-size:11.5px; cursor:pointer; font-weight:600; }
-.btn-logout:hover { background:rgba(255,255,255,.15); }
-
-.main { max-width:1100px; margin:0 auto; padding:24px; }
-
-/* STATS */
-.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:22px; }
-.stat { background:white; border-radius:11px; padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-.stat-lbl { font-size:10.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
-.stat-val { font-size:26px; font-weight:800; color:#0f1f3d; margin:3px 0 1px; }
-.stat-note { font-size:11px; color:#94a3b8; }
-.stat-note.red { color:#dc2626; font-weight:600; }
-.stat-note.grn { color:#16a34a; }
-
-/* TOOLBAR */
-.toolbar { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-.search-inp { flex:1; padding:9px 13px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12.5px; outline:none; }
-.search-inp:focus { border-color:#3b82f6; }
-.sel { padding:9px 10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:12.5px; outline:none; background:white; }
-.btn { display:inline-flex; align-items:center; gap:5px; padding:8px 15px; border-radius:7px; font-size:12.5px; font-weight:700; cursor:pointer; border:none; transition:all .15s; }
+.topbar-title { font-size:14px; font-weight:800; }
+.topbar-date  { font-size:11px; color:#475569; }
+.topbar-right { display:flex; align-items:center; gap:10px; }
+.user-chip { background:rgba(255,255,255,.1); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:600; }
+.btn-sm { display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; border:none; }
 .btn-primary { background:#1d4ed8; color:white; }
 .btn-primary:hover { background:#1e40af; }
-.btn-secondary { background:#f1f5f9; color:#334155; }
-.btn-secondary:hover { background:#e2e8f0; }
-.btn-sm { padding:5px 10px; font-size:11.5px; }
-.btn-ghost { background:none; border:none; cursor:pointer; padding:4px 7px; border-radius:5px; font-size:13px; }
-.btn-ghost:hover { background:#f1f5f9; }
+.btn-ghost-white { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:white; padding:6px 12px; border-radius:7px; font-size:11.5px; cursor:pointer; font-weight:600; }
+.btn-ghost-white:hover { background:rgba(255,255,255,.15); }
 
-/* TABLE */
-.card { background:white; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,.07); overflow:hidden; }
-.tbl-wrap { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; font-size:12.5px; }
-th { text-align:left; padding:10px 13px; background:#f8fafc; color:#64748b; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid #e2e8f0; white-space:nowrap; }
-td { padding:11px 13px; border-bottom:1px solid #f1f5f9; color:#334155; vertical-align:middle; }
-tr:last-child td { border-bottom:none; }
-tr:hover td { background:#fafbfc; }
+/* ── OVERVIEW BAR ── */
+.overview { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:12px; padding:16px 22px 0; }
+.ov-card { background:white; border-radius:11px; padding:14px 18px; box-shadow:0 1px 4px rgba(0,0,0,.06); display:flex; align-items:center; justify-content:space-between; }
+.ov-card.highlight { background:#0f1f3d; color:white; }
+.ov-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#64748b; }
+.ov-card.highlight .ov-lbl { color:#93c5fd; }
+.ov-val { font-size:28px; font-weight:900; color:#0f1f3d; }
+.ov-card.highlight .ov-val { color:white; }
+.ov-sub { font-size:10.5px; color:#94a3b8; margin-top:1px; }
+.ov-card.highlight .ov-sub { color:#60a5fa; }
+.ov-icon { font-size:26px; opacity:.8; }
+
+/* ── TABS ── */
+.tabs { display:flex; gap:0; padding:16px 22px 0; }
+.tab { display:flex; align-items:center; gap:8px; padding:11px 22px; font-size:13px; font-weight:700; cursor:pointer; border:none; background:white; color:#64748b; border-radius:10px 10px 0 0; border-bottom:3px solid transparent; transition:all .15s; position:relative; }
+.tab:hover { background:#f8fafc; color:#0f1f3d; }
+.tab.active { color:#1d4ed8; border-bottom:3px solid #1d4ed8; background:white; }
+.tab-badge { background:#e2e8f0; color:#475569; border-radius:20px; padding:2px 8px; font-size:11px; font-weight:700; }
+.tab.active .tab-badge { background:#dbeafe; color:#1d4ed8; }
+
+/* ── MAIN PANEL ── */
+.panel { background:white; border-radius:0 12px 12px 12px; margin:0 22px; padding:18px; box-shadow:0 1px 4px rgba(0,0,0,.07); min-height:400px; }
+.panel-left-tab { border-radius:12px 12px 12px 12px; }
+
+/* ── BUCKETS ── */
+.buckets { display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.bucket { background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:12px 16px; cursor:pointer; transition:all .15s; min-width:120px; text-align:center; }
+.bucket:hover { border-color:#1d4ed8; background:#eff6ff; }
+.bucket.active { background:#1d4ed8; border-color:#1d4ed8; color:white; }
+.bucket-icon { font-size:18px; display:block; margin-bottom:4px; }
+.bucket-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#64748b; }
+.bucket.active .bucket-lbl { color:rgba(255,255,255,.8); }
+.bucket-count { font-size:22px; font-weight:900; color:#0f1f3d; display:block; }
+.bucket.active .bucket-count { color:white; }
+
+/* ── LEAD CARDS ── */
+.lead-cards { display:flex; flex-direction:column; gap:12px; }
+.lead-card { border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; transition:box-shadow .15s; background:white; }
+.lead-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.09); }
+.lead-card.done { opacity:.5; pointer-events:none; }
+
+.lc-header { display:flex; justify-content:space-between; align-items:flex-start; padding:14px 16px 10px; gap:12px; }
+.lc-info { flex:1; min-width:0; }
+.lc-company { font-size:14px; font-weight:800; color:#0f1f3d; }
+.lc-poc { font-size:12.5px; color:#334155; margin-top:2px; }
+.lc-contact { display:flex; gap:12px; margin-top:5px; flex-wrap:wrap; }
+.lc-contact a { font-size:12px; color:#1d4ed8; text-decoration:none; font-weight:600; }
+.lc-contact a:hover { text-decoration:underline; }
+.lc-note { font-size:11px; color:#64748b; margin-top:6px; background:#f8fafc; border-radius:5px; padding:5px 8px; border-left:3px solid #e2e8f0; font-style:italic; max-width:500px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.lc-meta { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+.lc-date { font-size:11px; font-weight:700; padding:3px 8px; border-radius:5px; }
+.lc-date.today   { background:#fef3c7; color:#92400e; }
+.lc-date.overdue { background:#fee2e2; color:#991b1b; }
+.lc-date.future  { background:#f1f5f9; color:#475569; }
+
+/* ── ACTION BAR ── */
+.lc-actions { padding:0 16px 12px; display:flex; flex-wrap:wrap; gap:7px; }
+.act { display:inline-flex; align-items:center; gap:4px; padding:7px 11px; border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; border:1.5px solid transparent; transition:all .12s; white-space:nowrap; }
+.act:hover { filter:brightness(.93); transform:translateY(-1px); }
+.act:active { transform:translateY(0); }
+.act-neutral  { background:#f1f5f9; border-color:#e2e8f0; color:#334155; }
+.act-neutral:hover { border-color:#94a3b8; }
+.act-danger   { background:#fee2e2; border-color:#fca5a5; color:#991b1b; }
+.act-blue     { background:#dbeafe; border-color:#93c5fd; color:#1d4ed8; }
+.act-green    { background:#dcfce7; border-color:#86efac; color:#15803d; }
+.act-teal     { background:#ccfbf1; border-color:#5eead4; color:#0f766e; }
+.act-purple   { background:#ede9fe; border-color:#c4b5fd; color:#6d28d9; }
+.act-separator { width:1px; height:28px; background:#e2e8f0; align-self:center; margin:0 2px; }
+
+/* ── INLINE FORM ── */
+.lc-form { background:#f8fafc; border-top:1.5px solid #e2e8f0; padding:0; max-height:0; overflow:hidden; transition:max-height .25s ease, padding .25s ease; }
+.lc-form.open { max-height:300px; padding:14px 16px; }
+.lc-form-title { font-size:12px; font-weight:800; color:#0f1f3d; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.form-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; align-items:flex-end; }
+.form-group { display:flex; flex-direction:column; gap:3px; }
+.form-lbl { font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.4px; }
+.form-inp { padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#1e293b; outline:none; background:white; transition:border .15s; }
+.form-inp:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+.form-inp.wide { min-width:280px; flex:1; }
+.form-actions { display:flex; gap:8px; }
+.btn-save { padding:7px 16px; background:#1d4ed8; color:white; border:none; border-radius:7px; font-size:12.5px; font-weight:700; cursor:pointer; }
+.btn-save:hover { background:#1e40af; }
+.btn-cancel-form { padding:7px 12px; background:#f1f5f9; color:#475569; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; }
+
+/* ── BADGES ── */
 .badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; white-space:nowrap; }
-.b-gray { background:#f1f5f9; color:#475569; }
-.b-blue { background:#dbeafe; color:#1d4ed8; }
-.b-green { background:#dcfce7; color:#15803d; }
+.b-gray   { background:#f1f5f9; color:#475569; }
+.b-blue   { background:#dbeafe; color:#1d4ed8; }
+.b-green  { background:#dcfce7; color:#15803d; }
 .b-yellow { background:#fef3c7; color:#92400e; }
-.b-red { background:#fee2e2; color:#991b1b; }
+.b-red    { background:#fee2e2; color:#991b1b; }
 .b-purple { background:#ede9fe; color:#6d28d9; }
 .b-orange { background:#ffedd5; color:#9a3412; }
-.overdue { color:#dc2626; font-weight:700; }
-.due-soon { color:#d97706; font-weight:600; }
 
-/* MODAL */
-.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
-.overlay.open { display:flex; }
-.modal { background:white; border-radius:14px; padding:22px; width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.2); }
-.modal-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.modal-ttl { font-size:15px; font-weight:800; color:#0f1f3d; }
-.modal-x { width:26px; height:26px; border-radius:50%; background:#f1f5f9; border:none; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; color:#64748b; }
-.fg { margin-bottom:12px; }
-.flbl { font-size:11.5px; font-weight:700; color:#475569; margin-bottom:4px; display:block; text-transform:uppercase; letter-spacing:.4px; }
-.fc { width:100%; padding:8px 11px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#1e293b; outline:none; transition:border .15s; background:white; }
-.fc:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
-textarea.fc { resize:vertical; min-height:70px; }
-.frow { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.empty { text-align:center; padding:40px; color:#94a3b8; }
+/* ── LOAD MORE ── */
+.load-more-bar { text-align:center; padding:20px 0 10px; }
+.btn-load-more { padding:9px 28px; background:white; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:700; color:#334155; cursor:pointer; }
+.btn-load-more:hover { border-color:#1d4ed8; color:#1d4ed8; }
 
-/* QUICK UPDATE PANEL */
-.quick-panel { background:#f8fafc; border-top:1px solid #e2e8f0; padding:13px 16px; display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap; }
-.quick-lbl { font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:4px; display:block; }
+/* ── EMPTY STATE ── */
+.empty-state { text-align:center; padding:50px 20px; }
+.empty-state .emoji { font-size:40px; display:block; margin-bottom:12px; }
+.empty-state h3 { font-size:16px; font-weight:800; color:#0f1f3d; margin-bottom:6px; }
+.empty-state p  { font-size:13px; color:#64748b; }
+
+/* ── TOAST ── */
+.toast-wrap { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast { background:#0f1f3d; color:white; padding:10px 18px; border-radius:9px; font-size:13px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,.25); animation:slideIn .2s ease; display:flex; align-items:center; gap:8px; }
+.toast.success { background:#15803d; }
+.toast.error   { background:#991b1b; }
+@keyframes slideIn { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+/* ── MISC ── */
+::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+.hidden { display:none !important; }
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-left">
     <div>
       <div class="topbar-badge">RevAvenues · BU1</div>
-      <div class="topbar-title">Readable.ai — My Leads</div>
+      <div class="topbar-title">Readable.ai — Daily Calling Dashboard</div>
     </div>
+    <div class="topbar-date" id="todayDate"></div>
   </div>
   <div class="topbar-right">
     <div class="user-chip">👤 <span id="userName">…</span></div>
-    <button class="btn-logout" onclick="logout()">Sign Out</button>
+    <button class="btn-sm btn-primary" onclick="openAddModal()">+ Add Lead</button>
+    <button class="btn-ghost-white" onclick="logout()">Sign Out</button>
   </div>
 </div>
 
-<div class="main">
-
-  <!-- STATS -->
-  <div class="stats-row">
-    <div class="stat"><div class="stat-lbl">My Leads</div><div class="stat-val" id="sTotal">0</div><div class="stat-note">Assigned to me</div></div>
-    <div class="stat"><div class="stat-lbl">Overdue</div><div class="stat-val" id="sOverdue">0</div><div class="stat-note red" id="sOverdueNote">Follow-ups due</div></div>
-    <div class="stat"><div class="stat-lbl">Demo Stage+</div><div class="stat-val" id="sAdv">0</div><div class="stat-note grn">In advanced stage</div></div>
-    <div class="stat"><div class="stat-lbl">Due Today</div><div class="stat-val" id="sToday">0</div><div class="stat-note">Call today</div></div>
-  </div>
-
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <input class="search-inp" id="searchInp" placeholder="🔍 Search name or company…" oninput="renderTable()">
-    <select class="sel" id="stageF" onchange="renderTable()">
-      <option value="">All Stages</option>
-      <option>Identified</option><option>Contacted</option><option>Discovery Done</option>
-      <option>Demo Booked</option><option>Demo Done</option><option>Proposal Sent</option>
-      <option>Negotiation</option><option>Closed Won</option><option>Closed Lost</option>
-    </select>
-    <button class="btn btn-primary" onclick="openAddLead()">+ Add Lead</button>
-  </div>
-
-  <!-- TABLE -->
-  <div class="card">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th>Contact</th><th>Company</th><th>Designation</th><th>Stage</th>
-          <th>Last Call</th><th>Next Call</th><th>Actions</th>
-        </tr></thead>
-        <tbody id="leadsBody"></tbody>
-      </table>
+<!-- OVERVIEW -->
+<div class="overview">
+  <div class="ov-card highlight" style="cursor:pointer;" onclick="switchTab('followups')">
+    <div>
+      <div class="ov-lbl">Total Actionable Today</div>
+      <div class="ov-val" id="ovTotal">—</div>
+      <div class="ov-sub">Follow-ups + fresh calls pending</div>
     </div>
+    <div class="ov-icon">📋</div>
   </div>
-
+  <div class="ov-card" style="cursor:pointer;" onclick="switchTab('followups')">
+    <div>
+      <div class="ov-lbl">Follow-ups Due</div>
+      <div class="ov-val" id="ovFollowups">—</div>
+      <div class="ov-sub">Need action today</div>
+    </div>
+    <div class="ov-icon">🔙</div>
+  </div>
+  <div class="ov-card" style="cursor:pointer;" onclick="switchTab('fresh')">
+    <div>
+      <div class="ov-lbl">Fresh Calls</div>
+      <div class="ov-val" id="ovFresh">—</div>
+      <div class="ov-sub">Uncontacted leads</div>
+    </div>
+    <div class="ov-icon">📞</div>
+  </div>
+  <div class="ov-card">
+    <div>
+      <div class="ov-lbl">Actioned Today</div>
+      <div class="ov-val" id="ovDone">—</div>
+      <div class="ov-sub">Calls made today</div>
+    </div>
+    <div class="ov-icon">✅</div>
+  </div>
 </div>
 
-<!-- UPDATE MODAL -->
-<div class="overlay" id="updateModal">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-ttl" id="updateTitle">Update Lead</div>
-      <button class="modal-x" onclick="closeModal('updateModal')">✕</button>
+<!-- TABS -->
+<div class="tabs" style="padding-top:16px;">
+  <button class="tab active" id="tab-followups" onclick="switchTab('followups')">
+    📞 Follow Ups <span class="tab-badge" id="tbadge-followups">—</span>
+  </button>
+  <button class="tab" id="tab-fresh" onclick="switchTab('fresh')">
+    🆕 Fresh Calls <span class="tab-badge" id="tbadge-fresh">—</span>
+  </button>
+</div>
+
+<!-- PANEL -->
+<div class="panel" id="mainPanel" style="margin-bottom:30px;">
+
+  <!-- ── FOLLOW-UPS TAB ── -->
+  <div id="pane-followups">
+    <div class="buckets" id="buckets-followups">
+      <div class="bucket active" id="bu-f-all"       onclick="setBucket('followups','all')">
+        <span class="bucket-icon">📋</span>
+        <span class="bucket-count" id="bc-f-all">—</span>
+        <span class="bucket-lbl">All Due</span>
+      </div>
+      <div class="bucket" id="bu-f-callbacks"  onclick="setBucket('followups','callbacks')">
+        <span class="bucket-icon">🔙</span>
+        <span class="bucket-count" id="bc-f-callbacks">—</span>
+        <span class="bucket-lbl">Call Backs</span>
+      </div>
+      <div class="bucket" id="bu-f-proposals"  onclick="setBucket('followups','proposals')">
+        <span class="bucket-icon">📄</span>
+        <span class="bucket-count" id="bc-f-proposals">—</span>
+        <span class="bucket-lbl">Proposals</span>
+      </div>
+      <div class="bucket" id="bu-f-demos"      onclick="setBucket('followups','demos')">
+        <span class="bucket-icon">🎯</span>
+        <span class="bucket-count" id="bc-f-demos">—</span>
+        <span class="bucket-lbl">Demos</span>
+      </div>
     </div>
-    <div style="background:#f0f7ff;border-radius:8px;padding:12px;margin-bottom:14px;">
-      <div style="font-size:13px;font-weight:700;color:#0f1f3d;" id="uLeadName">—</div>
-      <div style="font-size:11.5px;color:#64748b;margin-top:2px;" id="uLeadCo">—</div>
-    </div>
-    <div class="fg">
-      <label class="flbl">Stage</label>
-      <select class="fc" id="uStage">
-        <option>Identified</option><option>Contacted</option><option>Discovery Done</option>
-        <option>Demo Booked</option><option>Demo Done</option><option>Proposal Sent</option>
-        <option>Negotiation</option><option>Closed Won</option><option>Closed Lost</option>
-      </select>
-    </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">Last Call Date</label><input class="fc" id="uLC" type="date"></div>
-      <div class="fg"><label class="flbl">Next Call Date</label><input class="fc" id="uNC" type="date"></div>
-    </div>
-    <div class="fg"><label class="flbl">Call Notes / Update</label><textarea class="fc" id="uNotes" placeholder="What happened on the call? What are the next steps?"></textarea></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn btn-secondary" onclick="closeModal('updateModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveUpdate()">💾 Save Update</button>
+    <div class="lead-cards" id="cards-followups"></div>
+    <div class="load-more-bar hidden" id="more-followups">
+      <button class="btn-load-more" onclick="loadMore('followups')">Load More Follow-ups ↓</button>
     </div>
   </div>
+
+  <!-- ── FRESH CALLS TAB ── -->
+  <div id="pane-fresh" class="hidden">
+    <div class="buckets" id="buckets-fresh">
+      <div class="bucket active" id="bu-r-all"       onclick="setBucket('fresh','all')">
+        <span class="bucket-icon">📊</span>
+        <span class="bucket-count" id="bc-r-all">—</span>
+        <span class="bucket-lbl">All Fresh</span>
+      </div>
+      <div class="bucket" id="bu-r-notcalled"  onclick="setBucket('fresh','notcalled')">
+        <span class="bucket-icon">⏳</span>
+        <span class="bucket-count" id="bc-r-notcalled">—</span>
+        <span class="bucket-lbl">Not Called</span>
+      </div>
+      <div class="bucket" id="bu-r-calledtoday" onclick="setBucket('fresh','calledtoday')">
+        <span class="bucket-icon">✅</span>
+        <span class="bucket-count" id="bc-r-calledtoday">—</span>
+        <span class="bucket-lbl">Called Today</span>
+      </div>
+    </div>
+    <div class="lead-cards" id="cards-fresh"></div>
+    <div class="load-more-bar hidden" id="more-fresh">
+      <button class="btn-load-more" onclick="loadMore('fresh')">Load More Fresh Leads ↓</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- ADD LEAD MODAL -->
-<div class="overlay" id="addModal">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-ttl">➕ Add New Lead</div>
-      <button class="modal-x" onclick="closeModal('addModal')">✕</button>
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;" id="addModal">
+  <div style="background:white;border-radius:14px;padding:22px;width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:800;color:#0f1f3d;">➕ Add New Lead</div>
+      <button onclick="closeAddModal()" style="width:26px;height:26px;border-radius:50%;background:#f1f5f9;border:none;cursor:pointer;font-size:14px;">✕</button>
     </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">Name *</label><input class="fc" id="aName" placeholder="Full name"></div>
-      <div class="fg"><label class="flbl">Company *</label><input class="fc" id="aCo" placeholder="Company name"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Name *</label><input id="aName" class="form-inp" style="width:100%;" placeholder="Full name"></div>
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Company *</label><input id="aCo" class="form-inp" style="width:100%;" placeholder="Company name"></div>
     </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">Designation</label><input class="fc" id="aDesg" placeholder="e.g. Head of Marketing"></div>
-      <div class="fg"><label class="flbl">Industry</label>
-        <select class="fc" id="aInd">
-          <option>BFSI / Fintech</option><option>IT / SaaS</option><option>Retail / D2C</option>
-          <option>Healthcare</option><option>Manufacturing</option><option>Professional Services</option><option>Other</option>
-        </select>
-      </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Designation</label><input id="aDesg" class="form-inp" style="width:100%;" placeholder="e.g. Head of Marketing"></div>
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Phone</label><input id="aPhone" class="form-inp" style="width:100%;" placeholder="+91 98XXX XXXXX"></div>
     </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">Email</label><input class="fc" id="aEmail" type="email"></div>
-      <div class="fg"><label class="flbl">Phone</label><input class="fc" id="aPhone" placeholder="+91 98XXX XXXXX"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Email</label><input id="aEmail" class="form-inp" style="width:100%;" type="email"></div>
+      <div><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Next Call Date</label><input id="aNC" class="form-inp" style="width:100%;" type="date"></div>
     </div>
-    <div class="frow">
-      <div class="fg"><label class="flbl">LinkedIn URL</label><input class="fc" id="aLI" placeholder="linkedin.com/in/..."></div>
-      <div class="fg"><label class="flbl">Source</label>
-        <select class="fc" id="aSrc">
-          <option>LinkedIn Outreach</option><option>Cold Email</option><option>Referral</option>
-          <option>WhatsApp</option><option>Manual Entry</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label class="flbl">Next Call Date</label><input class="fc" id="aNC" type="date"></div>
-    <div class="fg"><label class="flbl">Notes</label><textarea class="fc" id="aNotes" placeholder="Any context about this prospect…"></textarea></div>
+    <div style="margin-bottom:10px;"><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px;text-transform:uppercase;">Notes</label><textarea id="aNotes" class="form-inp" style="width:100%;min-height:60px;resize:vertical;"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNewLead()">Add Lead</button>
+      <button onclick="closeAddModal()" class="btn-cancel-form">Cancel</button>
+      <button onclick="saveNewLead()" class="btn-save">Add Lead</button>
     </div>
   </div>
 </div>
 
-<script>
-let leads  = [];
-let editId = null;
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
 
-const stageCols = {
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const PAGE_SIZE = 20;
+let state = {
+  tab: 'followups',
+  bucket: { followups: 'all', fresh: 'all' },
+  page:   { followups: 1, fresh: 1 },
+  leads:  { followups: [], fresh: [] },
+  total:  { followups: 0, fresh: 0 },
+  openForm: null   // { leadId, actionType }
+};
+let me = null;
+
+const TODAY = new Date().toISOString().split('T')[0];
+const TOMORROW = new Date(Date.now()+86400000).toISOString().split('T')[0];
+
+const STAGE_COL = {
   'Identified':'b-gray','Contacted':'b-blue','Discovery Done':'b-purple',
   'Demo Booked':'b-yellow','Demo Done':'b-orange','Proposal Sent':'b-yellow',
   'Negotiation':'b-red','Closed Won':'b-green','Closed Lost':'b-gray'
 };
 
-function today() { return new Date().toISOString().split('T')[0]; }
-function fd(d) {
-  if (!d) return '';
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
-}
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  const me = await fetch('/api/me').then(r => r.json()).catch(() => null);
-  if (!me || !me.id) { window.location.href = '/'; return; }
-  if (me.role === 'admin') { window.location.href = '/admin.html'; return; }
+  me = await fetch('/api/me').then(r=>r.json()).catch(()=>null);
+  if (!me?.id)     { window.location.href='/'; return; }
+  if (me.role==='admin') { window.location.href='/admin.html'; return; }
+
   document.getElementById('userName').textContent = me.name;
-  await loadLeads();
-  setInterval(loadLeads, 30000); // refresh every 30s
+  document.getElementById('todayDate').textContent =
+    new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Set min date for add modal next call date
+  document.getElementById('aNC').min = TODAY;
+
+  await Promise.all([loadOverview(), loadTab('followups'), loadTab('fresh')]);
+  setInterval(loadOverview, 60000);
 }
 
-async function loadLeads() {
-  const res = await fetch('/api/leads').catch(() => null);
-  if (!res || !res.ok) return;
-  leads = await res.json();
-  updateStats();
-  renderTable();
+// ── OVERVIEW STATS ────────────────────────────────────────────────────────────
+async function loadOverview() {
+  const [fu, fr, done] = await Promise.all([
+    fetch('/api/leads?filter=followups&page=1&limit=1').then(r=>r.json()).catch(()=>({total:0})),
+    fetch('/api/leads?stage=Identified&page=1&limit=1').then(r=>r.json()).catch(()=>({total:0})),
+    fetch(`/api/leads?page=1&limit=1&lcFrom=${TODAY}&lcTo=${TODAY}`).then(r=>r.json()).catch(()=>({total:0}))
+  ]);
+  const fuTotal = fu.total||0, frTotal = fr.total||0, doneTotal = done.total||0;
+  document.getElementById('ovFollowups').textContent = fuTotal;
+  document.getElementById('ovFresh').textContent     = frTotal;
+  document.getElementById('ovDone').textContent      = doneTotal;
+  document.getElementById('ovTotal').textContent     = fuTotal + frTotal;
+  document.getElementById('tbadge-followups').textContent = fuTotal;
+  document.getElementById('tbadge-fresh').textContent     = frTotal;
 }
 
-function updateStats() {
-  const td = today();
-  document.getElementById('sTotal').textContent   = leads.length;
-  document.getElementById('sOverdue').textContent = leads.filter(l => l.nc && l.nc < td && !['Closed Won','Closed Lost'].includes(l.stage)).length;
-  document.getElementById('sAdv').textContent     = leads.filter(l => ['Demo Booked','Demo Done','Proposal Sent','Negotiation','Closed Won'].includes(l.stage)).length;
-  document.getElementById('sToday').textContent   = leads.filter(l => l.nc === td).length;
+// ── TAB SWITCH ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  document.getElementById('pane-followups').classList.toggle('hidden', tab!=='followups');
+  document.getElementById('pane-fresh').classList.toggle('hidden', tab!=='fresh');
 }
 
-function renderTable() {
-  const q  = document.getElementById('searchInp').value.toLowerCase();
-  const sf = document.getElementById('stageF').value;
-  const td = today();
-  const data = leads.filter(l => {
-    const mq = !q || [l.name,l.co,l.desg].some(x => (x||'').toLowerCase().includes(q));
-    const ms = !sf || l.stage === sf;
-    return mq && ms;
-  });
-  document.getElementById('leadsBody').innerHTML = data.map(l => {
-    const ncClass = l.nc ? (l.nc < td ? 'overdue' : l.nc === td ? 'due-soon' : '') : '';
-    const ncHtml  = l.nc ? `<span class="${ncClass}">${fd(l.nc)}${l.nc < td ? ' ⚠️' : ''}</span>` : '<span style="color:#94a3b8">—</span>';
-    return `<tr>
-      <td><strong>${l.name}</strong><div style="font-size:10.5px;color:#64748b;">${l.email||''}</div></td>
-      <td style="font-weight:600;">${l.co}</td>
-      <td style="font-size:11.5px;">${l.desg||''}</td>
-      <td><span class="badge ${stageCols[l.stage]||'b-gray'}">${l.stage}</span></td>
-      <td style="font-size:11.5px;">${l.lc ? fd(l.lc) : '<span style="color:#94a3b8">Never</span>'}</td>
-      <td style="font-size:11.5px;">${ncHtml}</td>
-      <td>
-        <button class="btn btn-primary btn-sm" onclick="openUpdate(${l.id})">✏️ Update</button>
-        <button class="btn-ghost" title="Call" onclick="window.open('tel:${l.phone}')">📞</button>
-      </td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="7" class="empty">No leads found</td></tr>';
+// ── BUCKET FILTER ─────────────────────────────────────────────────────────────
+function setBucket(tab, bucket) {
+  state.bucket[tab] = bucket;
+  state.page[tab]   = 1;
+  // Update active bucket UI
+  const prefix = tab==='followups' ? 'bu-f-' : 'bu-r-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el=>el.classList.remove('active'));
+  document.getElementById(`${prefix}${bucket}`)?.classList.add('active');
+  renderCards(tab);
 }
 
-// ── UPDATE LEAD ───────────────────────────────────────────────────────────────
-function openUpdate(id) {
-  const l = leads.find(x => x.id == id);
-  if (!l) return;
-  editId = id;
-  document.getElementById('updateTitle').textContent = 'Update — ' + l.name;
-  document.getElementById('uLeadName').textContent   = l.name;
-  document.getElementById('uLeadCo').textContent     = l.co + (l.desg ? ' · ' + l.desg : '');
-  document.getElementById('uStage').value  = l.stage;
-  document.getElementById('uLC').value     = l.lc || '';
-  document.getElementById('uNC').value     = l.nc || '';
-  document.getElementById('uNotes').value  = l.notes || '';
-  openModal('updateModal');
+// ── LOAD TAB DATA ─────────────────────────────────────────────────────────────
+async function loadTab(tab) {
+  const params = tab==='followups'
+    ? `filter=followups&sort=nc&order=asc&limit=200`
+    : `stage=Identified&sort=nc&order=asc&limit=200`;
+
+  const data = await fetch(`/api/leads?${params}&page=1`).then(r=>r.json()).catch(()=>({leads:[],total:0}));
+  state.leads[tab]  = data.leads || data;
+  state.total[tab]  = data.total || (data.leads||data).length;
+  updateBucketCounts(tab);
+  renderCards(tab);
 }
 
-async function saveUpdate() {
-  if (!editId) return;
-  const body = {
-    stage: document.getElementById('uStage').value,
-    lc:    document.getElementById('uLC').value,
-    nc:    document.getElementById('uNC').value,
-    notes: document.getElementById('uNotes').value,
+// ── BUCKET COUNTS ─────────────────────────────────────────────────────────────
+function updateBucketCounts(tab) {
+  const leads = state.leads[tab];
+  if (tab==='followups') {
+    const all       = leads.length;
+    const callbacks = leads.filter(l=>['Contacted','Discovery Done'].includes(l.stage)).length;
+    const proposals = leads.filter(l=>['Proposal Sent','Negotiation'].includes(l.stage)).length;
+    const demos     = leads.filter(l=>['Demo Booked','Demo Done'].includes(l.stage)).length;
+    document.getElementById('bc-f-all').textContent       = all;
+    document.getElementById('bc-f-callbacks').textContent = callbacks;
+    document.getElementById('bc-f-proposals').textContent = proposals;
+    document.getElementById('bc-f-demos').textContent     = demos;
+  } else {
+    const all        = leads.length;
+    const notcalled  = leads.filter(l=>!l.lc).length;
+    const calledtoday= leads.filter(l=>l.lc===TODAY).length;
+    document.getElementById('bc-r-all').textContent        = all;
+    document.getElementById('bc-r-notcalled').textContent  = notcalled;
+    document.getElementById('bc-r-calledtoday').textContent= calledtoday;
+  }
+}
+
+// ── FILTER LEADS BY BUCKET ────────────────────────────────────────────────────
+function filterByBucket(tab) {
+  const leads  = state.leads[tab];
+  const bucket = state.bucket[tab];
+  if (tab==='followups') {
+    if (bucket==='callbacks') return leads.filter(l=>['Contacted','Discovery Done'].includes(l.stage));
+    if (bucket==='proposals') return leads.filter(l=>['Proposal Sent','Negotiation'].includes(l.stage));
+    if (bucket==='demos')     return leads.filter(l=>['Demo Booked','Demo Done'].includes(l.stage));
+  } else {
+    if (bucket==='notcalled')   return leads.filter(l=>!l.lc);
+    if (bucket==='calledtoday') return leads.filter(l=>l.lc===TODAY);
+  }
+  return leads; // 'all'
+}
+
+// ── RENDER CARDS ──────────────────────────────────────────────────────────────
+function renderCards(tab) {
+  const filtered = filterByBucket(tab);
+  const page     = state.page[tab];
+  const visible  = filtered.slice(0, page * PAGE_SIZE);
+  const hasMore  = filtered.length > visible.length;
+
+  const container = document.getElementById(`cards-${tab}`);
+  const moreBar   = document.getElementById(`more-${tab}`);
+
+  if (!filtered.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span class="emoji">🎉</span>
+        <h3>All caught up!</h3>
+        <p>No leads in this bucket right now.</p>
+      </div>`;
+    moreBar.classList.add('hidden');
+    return;
+  }
+
+  container.innerHTML = visible.map(l => buildCard(l, tab)).join('');
+  moreBar.classList.toggle('hidden', !hasMore);
+}
+
+function loadMore(tab) {
+  state.page[tab]++;
+  renderCards(tab);
+}
+
+// ── BUILD LEAD CARD ───────────────────────────────────────────────────────────
+function buildCard(l, tab) {
+  const ncLabel  = l.nc ? (l.nc<TODAY ? `⚠️ Overdue (${fd(l.nc)})` : l.nc===TODAY ? `📞 Today` : `📅 ${fd(l.nc)}`) : '—';
+  const ncClass  = l.nc ? (l.nc<TODAY ? 'overdue' : l.nc===TODAY ? 'today' : 'future') : 'future';
+  const noteSnip = l.notes ? l.notes.split('\n')[0].substring(0,100) : '';
+  const isFollowup = tab==='followups';
+
+  return `
+  <div class="lead-card" id="lc-${l.id}">
+    <div class="lc-header">
+      <div class="lc-info">
+        <div class="lc-company">${esc(l.co||'—')}</div>
+        <div class="lc-poc">${esc(l.name||'')}${l.desg ? ' · ' + esc(l.desg) : ''}</div>
+        <div class="lc-contact">
+          ${l.phone ? `<a href="tel:${esc(l.phone)}">📞 ${esc(l.phone)}</a>` : ''}
+          ${l.email ? `<a href="mailto:${esc(l.email)}">✉️ ${esc(l.email)}</a>` : ''}
+          ${l.li    ? `<a href="${esc(l.li)}" target="_blank">💼 LinkedIn</a>` : ''}
+        </div>
+        ${noteSnip ? `<div class="lc-note">${esc(noteSnip)}</div>` : ''}
+      </div>
+      <div class="lc-meta">
+        <span class="badge ${STAGE_COL[l.stage]||'b-gray'}">${esc(l.stage||'—')}</span>
+        ${l.hot ? `<span class="badge b-gray">${esc(l.hot)}</span>` : ''}
+        <div class="lc-date ${ncClass}">${ncLabel}</div>
+      </div>
+    </div>
+    <div class="lc-actions">
+      <button class="act act-neutral"  onclick="quickAction('${l.id}','ringing')">📵 Ringing</button>
+      <button class="act act-neutral"  onclick="quickAction('${l.id}','disconnected')">📴 Disconnected</button>
+      <button class="act act-neutral"  onclick="quickAction('${l.id}','wrong_number')">🔢 Wrong #</button>
+      <button class="act act-danger"   onclick="quickAction('${l.id}','not_interested')">❌ Not Interested</button>
+      <div class="act-separator"></div>
+      <button class="act act-blue"     onclick="showForm('${l.id}','call_back')">📅 Call Back</button>
+      <button class="act act-green"    onclick="showForm('${l.id}','proposal_shared')">📄 Proposal</button>
+      <button class="act act-green"    onclick="showForm('${l.id}','demo_booked')">🎯 Demo Booked</button>
+      ${isFollowup ? `<button class="act act-teal" onclick="showForm('${l.id}','quotation_shared')">💰 Quotation</button>` : ''}
+      ${isFollowup ? `<button class="act act-purple" onclick="showForm('${l.id}','case_study_sent')">📚 Case Study</button>` : ''}
+    </div>
+    <div class="lc-form" id="form-${l.id}"></div>
+  </div>`;
+}
+
+// ── QUICK ACTIONS (no form needed) ───────────────────────────────────────────
+async function quickAction(leadId, actionType) {
+  const messages = {
+    ringing:      'Marked as Ringing — follow-up set for tomorrow',
+    disconnected: 'Marked as Disconnected — follow-up set for tomorrow',
+    wrong_number: 'Wrong Number noted',
+    not_interested: null // will confirm below
   };
-  const res = await fetch(`/api/leads/${editId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  if (res.ok) { closeModal('updateModal'); await loadLeads(); }
-  else { alert((await res.json()).error || 'Update failed'); }
+  if (actionType==='not_interested') {
+    if (!confirm('Mark as Not Interested? This will close the lead.')) return;
+  }
+  await doAction(leadId, { actionType });
+  toast(messages[actionType] || 'Saved ✓', 'success');
+}
+
+// ── INLINE FORMS ─────────────────────────────────────────────────────────────
+function showForm(leadId, actionType) {
+  // Close any open form first
+  if (state.openForm) closeForm(state.openForm.leadId);
+
+  const formEl = document.getElementById(`form-${leadId}`);
+  if (!formEl) return;
+
+  const labels = {
+    call_back:       { title:'📅 Schedule Call Back', save:'Save Call Back' },
+    proposal_shared: { title:'📄 Proposal Shared',    save:'Save & Set Follow-up' },
+    demo_booked:     { title:'🎯 Demo Booked',         save:'Confirm Demo' },
+    quotation_shared:{ title:'💰 Quotation Shared',    save:'Save & Set Follow-up' },
+    case_study_sent: { title:'📚 Case Study Sent',     save:'Save & Set Follow-up' }
+  };
+  const cfg = labels[actionType] || { title: 'Details', save: 'Save' };
+
+  let fields = '';
+  if (actionType==='call_back') {
+    fields = `
+      <div class="form-group">
+        <label class="form-lbl">Call Back Date *</label>
+        <input class="form-inp" id="fi-date-${leadId}" type="date" min="${TODAY}" value="${TOMORROW}">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-lbl">Comment (optional)</label>
+        <input class="form-inp wide" id="fi-comment-${leadId}" placeholder="e.g. Will check with team and revert">
+      </div>`;
+  } else if (actionType==='demo_booked') {
+    fields = `
+      <div class="form-group">
+        <label class="form-lbl">Demo Date *</label>
+        <input class="form-inp" id="fi-date-${leadId}" type="date" min="${TODAY}">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-lbl">Attendees</label>
+        <input class="form-inp wide" id="fi-attendees-${leadId}" placeholder="e.g. CMO + Head of Digital">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-lbl">Comment</label>
+        <input class="form-inp wide" id="fi-comment-${leadId}" placeholder="Any additional notes">
+      </div>`;
+  } else {
+    fields = `
+      <div class="form-group">
+        <label class="form-lbl">Next Follow-up Date *</label>
+        <input class="form-inp" id="fi-date-${leadId}" type="date" min="${TODAY}" value="${TOMORROW}">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-lbl">Comment (optional)</label>
+        <input class="form-inp wide" id="fi-comment-${leadId}" placeholder="Notes about this action">
+      </div>`;
+  }
+
+  formEl.innerHTML = `
+    <div class="lc-form-title">${cfg.title}</div>
+    <div class="form-row">${fields}</div>
+    <div class="form-actions">
+      <button class="btn-cancel-form" onclick="closeForm('${leadId}')">← Cancel</button>
+      <button class="btn-save" onclick="submitForm('${leadId}','${actionType}')">${cfg.save}</button>
+    </div>`;
+
+  formEl.classList.add('open');
+  state.openForm = { leadId, actionType };
+
+  // Focus first input
+  setTimeout(() => formEl.querySelector('input')?.focus(), 100);
+}
+
+function closeForm(leadId) {
+  const el = document.getElementById(`form-${leadId}`);
+  if (el) { el.classList.remove('open'); el.innerHTML = ''; }
+  state.openForm = null;
+}
+
+async function submitForm(leadId, actionType) {
+  const dateEl     = document.getElementById(`fi-date-${leadId}`);
+  const commentEl  = document.getElementById(`fi-comment-${leadId}`);
+  const attendeeEl = document.getElementById(`fi-attendees-${leadId}`);
+
+  const date = dateEl?.value;
+  if (!date) { toast('Please select a date', 'error'); dateEl?.focus(); return; }
+  if (date < TODAY) { toast('Date cannot be in the past', 'error'); return; }
+
+  const payload = { actionType, comment: commentEl?.value || '' };
+  if (actionType==='call_back')        payload.callBackDate = date;
+  else if (actionType==='demo_booked') { payload.demoDate = date; payload.attendees = attendeeEl?.value || ''; }
+  else                                  payload.nextDate = date;
+
+  closeForm(leadId);
+  await doAction(leadId, payload);
+  toast('Saved ✓', 'success');
+}
+
+// ── DO ACTION (API call + update state) ──────────────────────────────────────
+async function doAction(leadId, payload) {
+  const res = await fetch(`/api/leads/${leadId}/action`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(r=>r.json()).catch(()=>null);
+
+  if (!res || res.error) { toast(res?.error||'Error saving', 'error'); return; }
+
+  // Remove card from current view (it no longer belongs in today's queue)
+  const cardEl = document.getElementById(`lc-${leadId}`);
+  if (cardEl) {
+    cardEl.style.transition = 'opacity .3s, transform .3s';
+    cardEl.style.opacity = '0';
+    cardEl.style.transform = 'translateX(20px)';
+    setTimeout(() => {
+      // Remove from state arrays
+      ['followups','fresh'].forEach(tab => {
+        state.leads[tab] = state.leads[tab].filter(l => String(l.id) !== String(leadId));
+      });
+      updateBucketCounts('followups');
+      updateBucketCounts('fresh');
+      renderCards(state.tab);
+      loadOverview();
+    }, 300);
+  }
 }
 
 // ── ADD LEAD ──────────────────────────────────────────────────────────────────
-function openAddLead() {
-  ['aName','aCo','aDesg','aEmail','aPhone','aLI','aNC','aNotes'].forEach(id => document.getElementById(id).value = '');
-  openModal('addModal');
-}
+function openAddModal()  { document.getElementById('addModal').style.display = 'flex'; }
+function closeAddModal() { document.getElementById('addModal').style.display = 'none'; }
+
 async function saveNewLead() {
   const name = document.getElementById('aName').value.trim();
   const co   = document.getElementById('aCo').value.trim();
-  if (!name || !co) { alert('Name and Company are required'); return; }
-  const body = {
-    name, co,
-    desg:  document.getElementById('aDesg').value,
-    ind:   document.getElementById('aInd').value,
-    email: document.getElementById('aEmail').value,
-    phone: document.getElementById('aPhone').value,
-    li:    document.getElementById('aLI').value,
-    src:   document.getElementById('aSrc').value,
-    nc:    document.getElementById('aNC').value,
-    notes: document.getElementById('aNotes').value,
-    stage: 'Identified', lc: ''
-  };
-  const res = await fetch('/api/leads', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  if (res.ok) { closeModal('addModal'); await loadLeads(); }
-  else { alert((await res.json()).error || 'Failed to add lead'); }
+  if (!name||!co) { toast('Name and Company are required','error'); return; }
+  const nc = document.getElementById('aNC').value;
+  if (nc && nc < TODAY) { toast('Next call date cannot be in the past','error'); return; }
+  await fetch('/api/leads',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      name, co,
+      desg:  document.getElementById('aDesg').value.trim(),
+      phone: document.getElementById('aPhone').value.trim(),
+      email: document.getElementById('aEmail').value.trim(),
+      nc,
+      notes: document.getElementById('aNotes').value.trim()
+    })
+  });
+  closeAddModal();
+  toast('Lead added ✓', 'success');
+  await Promise.all([loadOverview(), loadTab('fresh')]);
 }
 
 // ── LOGOUT ────────────────────────────────────────────────────────────────────
 async function logout() {
-  await fetch('/api/logout', { method:'POST' });
-  window.location.href = '/';
+  await fetch('/api/logout',{method:'POST'});
+  window.location.href='/';
 }
 
-// Close modals on overlay click
-document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='') {
+  const wrap = document.getElementById('toastWrap');
+  const el   = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 2500);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fd(d) {
+  if (!d) return '';
+  try { return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}); }
+  catch { return d; }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') {
+    closeAddModal();
+    if (state.openForm) closeForm(state.openForm.leadId);
+  }
+});
 
 init();
 </script>

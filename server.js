@@ -145,9 +145,88 @@ app.post('/api/change-password', requireAuth, async (req, res) => {
 
 // ── LEADS ──────────────────────────────────────────────────────────────────────
 app.get('/api/leads', requireAuth, async (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+
+  // Base ownership filter
   const query = req.session.user.role === 'bdr' ? { owner: req.session.user.name } : {};
-  const leads = await db.collection('leads').find(query, { projection: { _id: 0 } }).toArray();
-  res.json(leads);
+
+  // ── Filters ──
+  const { search, stage, industry, hot, filter, ncFrom, ncTo, lcFrom, lcTo, page, limit, sort, order } = req.query;
+
+  if (stage)    query.stage = stage;
+  if (industry) query.ind   = industry;
+  if (hot)      query.hot   = hot;
+
+  if (search) {
+    query.$or = [
+      { name:  { $regex: search, $options: 'i' } },
+      { co:    { $regex: search, $options: 'i' } },
+      { phone: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+      { city:  { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  // Quick filters
+  if (filter === 'today') {
+    query.nc = today;
+  } else if (filter === 'overdue') {
+    query.nc    = { $lt: today, $ne: '' };
+    query.stage = { $nin: ['Closed Won', 'Closed Lost'] };
+  } else if (filter === 'not_contacted') {
+    query.stage = 'Identified';
+  } else if (filter === 'no_date') {
+    query.nc    = { $in: ['', null] };
+    query.stage = { $nin: ['Closed Won', 'Closed Lost', 'Identified'] };
+  } else if (filter === 'followups') {
+    // All active leads due today or overdue (auto-advance rule)
+    query.nc    = { $lte: today, $ne: '' };
+    query.stage = { $nin: ['Identified', 'Closed Won', 'Closed Lost'] };
+  }
+
+  // Date range filters
+  if (ncFrom || ncTo) {
+    query.nc = query.nc || {};
+    if (typeof query.nc === 'string') query.nc = { $eq: query.nc };
+    if (ncFrom) query.nc.$gte = ncFrom;
+    if (ncTo)   query.nc.$lte = ncTo;
+  }
+  if (lcFrom || lcTo) {
+    query.lc = {};
+    if (lcFrom) query.lc.$gte = lcFrom;
+    if (lcTo)   query.lc.$lte = lcTo;
+  }
+
+  // ── Sorting ──
+  const sortField = sort  || 'nc';
+  const sortDir   = order === 'desc' ? -1 : 1;
+  const sortObj   = { [sortField]: sortDir };
+
+  // ── Pagination ──
+  const paginate  = !!page;
+  const pageNum   = parseInt(page)  || 1;
+  const limitNum  = parseInt(limit) || 50;
+  const skip      = (pageNum - 1) * limitNum;
+
+  const total = await db.collection('leads').countDocuments(query);
+
+  let cursor = db.collection('leads').find(query, { projection: { _id: 0 } }).sort(sortObj);
+  if (paginate) cursor = cursor.skip(skip).limit(limitNum);
+
+  const leads = await cursor.toArray();
+
+  if (paginate) {
+    res.json({ leads, total, page: pageNum, pages: Math.ceil(total / limitNum), limit: limitNum });
+  } else {
+    res.json(leads);
+  }
+});
+
+// ── INDUSTRIES (for filter dropdown) ──────────────────────────────────────────
+app.get('/api/industries', requireAuth, async (req, res) => {
+  const query = req.session.user.role === 'bdr' ? { owner: req.session.user.name } : {};
+  const industries = await db.collection('leads').distinct('ind', query);
+  res.json(industries.filter(Boolean).sort());
 });
 
 app.post('/api/leads', requireAuth, async (req, res) => {
@@ -193,6 +272,92 @@ app.delete('/api/leads/:id', requireAdmin, async (req, res) => {
   await db.collection('leads').deleteOne({ id });
   if (lead) await logActivity(req.session.user, 'Deleted lead', lead.name, lead.co);
   res.json({ success: true });
+});
+
+// ── LEAD ACTIONS ──────────────────────────────────────────────────────────────
+function prependNote(existing, newNote) {
+  return newNote + (existing ? '\n' + existing : '');
+}
+
+app.post('/api/leads/:id/action', requireAuth, async (req, res) => {
+  const today    = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const { actionType, callBackDate, demoDate, attendees, nextDate, comment } = req.body;
+
+  const id   = Number(req.params.id) || req.params.id;
+  const lead = await db.collection('leads').findOne({ id });
+  if (!lead) return res.status(404).json({ error: 'Lead not found' });
+  if (req.session.user.role === 'bdr' && lead.owner !== req.session.user.name)
+    return res.status(403).json({ error: 'Not your lead' });
+
+  // Enforce no backdated nc dates
+  const safeDate = (d) => (!d || d < today) ? today : d;
+
+  const updates = { lc: today };
+  let activityMsg = '';
+
+  switch (actionType) {
+    case 'ringing':
+      updates.nc    = tomorrow;
+      updates.notes = prependNote(lead.notes, `[${today}] Called — Ringing, no answer`);
+      updates.stage = lead.stage === 'Identified' ? 'Contacted' : lead.stage;
+      activityMsg   = 'Called — Ringing';
+      break;
+    case 'disconnected':
+      updates.nc    = tomorrow;
+      updates.notes = prependNote(lead.notes, `[${today}] Call Disconnected`);
+      updates.stage = lead.stage === 'Identified' ? 'Contacted' : lead.stage;
+      activityMsg   = 'Call Disconnected';
+      break;
+    case 'wrong_number':
+      updates.nc    = '';
+      updates.notes = prependNote(lead.notes, `[${today}] Wrong Number`);
+      activityMsg   = 'Wrong Number';
+      break;
+    case 'not_interested':
+      updates.stage = 'Closed Lost';
+      updates.nc    = '';
+      updates.notes = prependNote(lead.notes, `[${today}] Not Interested${comment ? ': ' + comment : ''}`);
+      activityMsg   = 'Marked Not Interested';
+      break;
+    case 'call_back':
+      updates.nc    = safeDate(callBackDate);
+      updates.stage = lead.stage === 'Identified' ? 'Contacted' : lead.stage;
+      updates.notes = prependNote(lead.notes, `[${today}] Call Back → ${updates.nc}${comment ? ' — ' + comment : ''}`);
+      activityMsg   = `Call Back set for ${updates.nc}`;
+      break;
+    case 'proposal_shared':
+      updates.stage = 'Proposal Sent';
+      updates.nc    = safeDate(nextDate);
+      updates.notes = prependNote(lead.notes, `[${today}] Proposal Shared${comment ? ': ' + comment : ''}. Follow-up: ${updates.nc}`);
+      activityMsg   = 'Proposal Shared';
+      break;
+    case 'demo_booked':
+      updates.stage = 'Demo Booked';
+      updates.nc    = safeDate(demoDate);
+      updates.notes = prependNote(lead.notes, `[${today}] Demo Booked for ${updates.nc}${attendees ? '. Attendees: ' + attendees : ''}${comment ? '. ' + comment : ''}`);
+      activityMsg   = `Demo Booked for ${updates.nc}`;
+      break;
+    case 'quotation_shared':
+      updates.stage = 'Proposal Sent';
+      updates.nc    = safeDate(nextDate);
+      updates.notes = prependNote(lead.notes, `[${today}] Quotation Shared${comment ? ': ' + comment : ''}. Follow-up: ${updates.nc}`);
+      activityMsg   = 'Quotation Shared';
+      break;
+    case 'case_study_sent':
+      updates.nc    = safeDate(nextDate);
+      updates.notes = prependNote(lead.notes, `[${today}] Case Study Sent${comment ? ': ' + comment : ''}. Follow-up: ${updates.nc}`);
+      activityMsg   = 'Case Study Sent';
+      break;
+    default:
+      return res.status(400).json({ error: 'Unknown action type' });
+  }
+
+  const updated = { ...lead, ...updates };
+  delete updated._id;
+  await db.collection('leads').replaceOne({ id: lead.id }, updated);
+  await logActivity(req.session.user, activityMsg, lead.name, lead.co);
+  res.json(updated);
 });
 
 // ── ACTIVITY & STATS ───────────────────────────────────────────────────────────
